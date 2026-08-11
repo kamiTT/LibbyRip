@@ -953,10 +953,10 @@ window.__libregrabClientZipReady = new Promise((resolve, reject) => {
             spine.appendChild(itemref);
         });
 
-       assetRegistry.forEach(asset => {
-        const item = doc.createElementNS('http://www.idpf.org/2007/opf', 'item');
-        let aname = getAssetFileName(assetRegistry, asset);
-        let id = aname.split(".")[0];
+        assetRegistry.forEach(asset => {
+            const item = doc.createElementNS('http://www.idpf.org/2007/opf', 'item');
+            let aname = getAssetFileName(assetRegistry, asset);
+            let id = aname.split(".")[0];
             while (idStore.includes(id)) {
               id = id + "-" + crypto.randomUUID();
             }
