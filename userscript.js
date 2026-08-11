@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name          LibreGRAB
+// @name          LibreGRAB-fork
 // @namespace     http://tampermonkey.net/
 // @version       2026-06-01
 // @description   Download all the booty!
@@ -590,6 +590,7 @@ window.__libregrabClientZipReady = new Promise((resolve, reject) => {
         </div>
     `;
     const pages = window.pages = {};
+    const IMAGE_EXTENSIONS = new Set(['jpg','jpeg','png','gif','bmp','webp','svg']);
 
     // Libby used the bind method as a way to "safely" expose
     // the decryption module. THIS IS THEIR DOWNFALL.
@@ -614,6 +615,15 @@ window.__libregrabClientZipReady = new Promise((resolve, reject) => {
 
         return boundFn;
     };
+
+    function getAssetFileName(assetRegistry, src) {
+        const originalName = src.startsWith("http") ? getFilenameFromURL(src) : truncate(src);
+        const ext = originalName.split('.').pop().toLowerCase();
+        if (!IMAGE_EXTENSIONS.has(ext)) return originalName; // leave CSS etc. alone
+
+        const idx = assetRegistry.indexOf(src);
+        return `img${String(idx + 1).padStart(5, '0')}.${ext}`;
+    }
 
 
     async function waitForChapters(callback){
@@ -714,7 +724,7 @@ window.__libregrabClientZipReady = new Promise((resolve, reject) => {
             const blob = await response.blob();
 
             files.push({
-                name: "OEBPS/" + (name.startsWith("http") ? getFilenameFromURL(name) : name),
+                name: "OEBPS/" + getAssetFileName(imgAssests, name),
                 input: blob
             });
 
@@ -760,10 +770,11 @@ window.__libregrabClientZipReady = new Promise((resolve, reject) => {
                 if (!assetRegistry.includes(src))
                     assetRegistry.push(src);
 
+                const assetName = getAssetFileName(assetRegistry, src);
                 if (el.getAttribute("src"))
-                    el.setAttribute("src", truncate(src));
+                    el.setAttribute("src", assetName);
                 if (el.getAttribute("xlink:href"))
-                    el.setAttribute("xlink:href", truncate(src));
+                    el.setAttribute("xlink:href", assetName);
             }
         }
 
@@ -944,7 +955,7 @@ window.__libregrabClientZipReady = new Promise((resolve, reject) => {
 
         assetRegistry.forEach(asset => {
             const item = doc.createElementNS('http://www.idpf.org/2007/opf', 'item');
-            let aname = asset.startsWith("http") ? getFilenameFromURL(asset) : asset;
+            let aname = getAssetFileName(assetRegistry, asset);
             let id = aname.split(".")[0];
             while (idStore.includes(id)) {
               id = id + "-" + crypto.randomUUID();
