@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name          LibreGRAB
+// @name          LibreGRAB-fork
 // @namespace     http://tampermonkey.net/
 // @version       2026-06-01
 // @description   Download all the booty!
